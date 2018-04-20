@@ -10,12 +10,18 @@ import android.support.v4.content.ContextCompat
 import android.view.Menu
 import android.view.MenuItem
 import com.google.zxing.Result
-import me.dm7.barcodescanner.zxing.ZXingScannerView
+import com.google.zxing.BarcodeFormat
+import java.util.ArrayList
+import com.journeyapps.barcodescanner.CaptureManager;
+import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
 
-class BarcodeScannerActivity : Activity(), ZXingScannerView.ResultHandler {
 
-    lateinit var scannerView: me.dm7.barcodescanner.zxing.ZXingScannerView
+
+class BarcodeScannerActivity : Activity() {
+
+    lateinit var scannerView: com.journeyapps.barcodescanner.DecoratedBarcodeView;
+    lateinit var capture: com.journeyapps.barcodescanner.CaptureManager;
 
     companion object {
         val REQUEST_TAKE_PHOTO_CAMERA_PERMISSION = 100
@@ -25,12 +31,22 @@ class BarcodeScannerActivity : Activity(), ZXingScannerView.ResultHandler {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        title = ""
+        // title = ""
+        scannerView = DecoratedBarcodeView(this)
+        capture = CaptureManager(this@BarcodeScannerActivity, scannerView)
+        capture.decode()
+        /*
+        val f = arrayOf(BarcodeFormat.CODE_39);
         scannerView = ZXingScannerView(this)
-        scannerView.setAutoFocus(true)
+        scannerView.setAutoFocus(false)
+        scannerView.setAspectTolerance(0.05f)
+        scannerView.setFormats(f.toList());
+        scannerView.setShouldScaleToFill(true);
+        */
         setContentView(scannerView)
     }
 
+    /*
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         if (scannerView.flash) {
             val item = menu.add(0,
@@ -52,27 +68,33 @@ class BarcodeScannerActivity : Activity(), ZXingScannerView.ResultHandler {
         }
         return super.onOptionsItemSelected(item)
     }
+    */
 
     override fun onResume() {
         super.onResume()
+        /*
         scannerView.setResultHandler(this)
         // start camera immediately if permission is already given
         if (!requestCameraAccessIfNecessary()) {
             scannerView.startCamera()
         }
+        */
+        capture.onResume();
     }
 
     override fun onPause() {
         super.onPause()
-        scannerView.stopCamera()
+        capture.onPause();
+        //scannerView.stopCamera()
     }
 
+    /*
     override fun handleResult(result: Result?) {
         val intent = Intent()
         intent.putExtra("SCAN_RESULT", result.toString())
         setResult(Activity.RESULT_OK, intent)
         finish()
-    }
+    }*/
 
     fun finishWithError(errorCode: String) {
         val intent = Intent()
@@ -97,7 +119,7 @@ class BarcodeScannerActivity : Activity(), ZXingScannerView.ResultHandler {
         when (requestCode) {
             REQUEST_TAKE_PHOTO_CAMERA_PERMISSION -> {
                 if (PermissionUtil.verifyPermissions(grantResults)) {
-                    scannerView.startCamera()
+                    //scannerView.startCamera()
                 } else {
                     finishWithError("PERMISSION_NOT_GRANTED")
                 }
